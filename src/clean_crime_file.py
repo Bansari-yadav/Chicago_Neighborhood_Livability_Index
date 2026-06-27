@@ -9,29 +9,47 @@ crime_file = RAW_DATA / "Crimes_-_One_year_prior_to_present_20260624.csv"
 output_file = CLEANED_DATA / "cleaned_crime_2025_2026.csv"
 
 columns_to_use = [
-    "Date",
-    "Primary Type",
-    "Description",
-    "Location Description",
-    "Arrest",
-    "Domestic",
-    "Community Area",
-    "Year",
-    "Latitude",
-    "Longitude",
+    "DATE  OF OCCURRENCE",
+    " PRIMARY DESCRIPTION",
+    " SECONDARY DESCRIPTION",
+    " LOCATION DESCRIPTION",
+    "ARREST",
+    "DOMESTIC",
+    "WARD",
+    "LATITUDE",
+    "LONGITUDE",
 ]
 
 chunks = []
 
 for chunk in pd.read_csv(crime_file, usecols=columns_to_use, chunksize=100000):
-    chunk = chunk.dropna(subset=["Community Area"])
+    chunk = chunk.rename(
+        columns={
+            "DATE  OF OCCURRENCE": "date",
+            " PRIMARY DESCRIPTION": "primary_type",
+            " SECONDARY DESCRIPTION": "description",
+            " LOCATION DESCRIPTION": "location_description",
+            "ARREST": "arrest",
+            "DOMESTIC": "domestic",
+            "WARD": "ward",
+            "LATITUDE": "latitude",
+            "LONGITUDE": "longitude",
+        }
+    )
 
-    chunk["Community Area"] = chunk["Community Area"].astype(int)
+    chunk["date"] = pd.to_datetime(chunk["date"], errors="coerce")
+    chunk = chunk.dropna(subset=["date"])
 
-    chunk = chunk[chunk["Community Area"] != 0]
+    chunk["year"] = chunk["date"].dt.year
+    chunk["month"] = chunk["date"].dt.month
 
-    chunk["Date"] = pd.to_datetime(chunk["Date"], errors="coerce")
-    chunk = chunk.dropna(subset=["Date"])
+    chunk["ward"] = pd.to_numeric(chunk["ward"], errors="coerce")
+    chunk["latitude"] = pd.to_numeric(chunk["latitude"], errors="coerce")
+    chunk["longitude"] = pd.to_numeric(chunk["longitude"], errors="coerce")
+
+    chunk["primary_type"] = chunk["primary_type"].astype(str).str.strip()
+    chunk["description"] = chunk["description"].astype(str).str.strip()
+    chunk["location_description"] = chunk["location_description"].astype(str).str.strip()
 
     chunks.append(chunk)
 
