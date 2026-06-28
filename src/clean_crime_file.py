@@ -6,7 +6,9 @@ CLEANED_DATA = Path("data/cleaned")
 CLEANED_DATA.mkdir(parents=True, exist_ok=True)
 
 crime_file = RAW_DATA / "Crimes_-_One_year_prior_to_present_20260624.csv"
-output_file = CLEANED_DATA / "cleaned_crime_2025_2026.csv"
+# output_file = CLEANED_DATA / "cleaned_crime_2025_2026.csv" changes after discrepencies found in the dates
+output_file = CLEANED_DATA / "cleaned_crime_2015_2026_partial.csv"
+
 
 columns_to_use = [
     "DATE  OF OCCURRENCE",
@@ -41,6 +43,7 @@ for chunk in pd.read_csv(crime_file, usecols=columns_to_use, chunksize=100000):
     chunk = chunk.dropna(subset=["date"])
 
     chunk["year"] = chunk["date"].dt.year
+    chunk = chunk[(chunk["year"] >= 2015) & (chunk["year"] <= 2026)]
     chunk["month"] = chunk["date"].dt.month
 
     chunk["ward"] = pd.to_numeric(chunk["ward"], errors="coerce")
