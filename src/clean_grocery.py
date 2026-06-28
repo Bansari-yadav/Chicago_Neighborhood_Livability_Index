@@ -40,4 +40,20 @@ grocery["community_area"] = pd.to_numeric(grocery["community_area"], errors="coe
 grocery["square_feet"] = pd.to_numeric(grocery["square_feet"], errors="coerce").fillna(0)
 
 grocery = grocery.dropna(subset=["community_area"])
-grocery["community_area"]
+grocery["community_area"] = grocery["community_area"].astype(int)
+
+summary = (
+    grocery.groupby(["community_area", "community_area_name"])
+    .agg(
+        grocery_store_count=("store_name", "count"),
+        total_grocery_square_feet=("square_feet", "sum"),
+        avg_grocery_square_feet=("square_feet", "mean"),
+    )
+    .reset_index()
+)
+
+summary.to_csv(output_file, index=False)
+
+print("Grocery summary saved to:", output_file)
+print("Rows:", len(summary))
+print(summary.head())
