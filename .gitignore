@@ -1,0 +1,5 @@
+.venv/
+data/raw/
+data/cleaned/*.csv
+__pycache__/
+.vscode/
