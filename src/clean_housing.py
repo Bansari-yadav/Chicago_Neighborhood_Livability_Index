@@ -30,9 +30,17 @@ housing["units"] = pd.to_numeric(housing["units"], errors="coerce").fillna(0)
 housing = housing.dropna(subset=["community_area"])
 housing["community_area"] = housing["community_area"].astype(int)
 
+housing["community_area_name"] = (
+    housing["community_area_name"]
+    .astype(str)
+    .str.strip()
+    .str.title()
+)
+
 summary = (
-    housing.groupby(["community_area", "community_area_name"])
+    housing.groupby("community_area")
     .agg(
+        community_area_name=("community_area_name", "first"),
         affordable_property_count=("property_name", "count"),
         affordable_unit_count=("units", "sum"),
         avg_units_per_property=("units", "mean"),
